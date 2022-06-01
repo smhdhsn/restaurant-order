@@ -8,9 +8,13 @@ import (
 
 	"github.com/smhdhsn/restaurant-order/internal/config"
 	"github.com/smhdhsn/restaurant-order/internal/db"
+	"github.com/smhdhsn/restaurant-order/internal/model"
+	"github.com/smhdhsn/restaurant-order/internal/repository/mysql"
+	"github.com/smhdhsn/restaurant-order/internal/service"
 
 	log "github.com/smhdhsn/restaurant-order/internal/logger"
 	eipb "github.com/smhdhsn/restaurant-order/internal/protos/edible/inventory"
+	remoteRepository "github.com/smhdhsn/restaurant-order/internal/repository/remote"
 )
 
 // ctx holds application's context.
@@ -54,7 +58,15 @@ func main() {
 	// instantiate gRPC clients.
 	eiClient := eipb.NewEdibleInventoryServiceClient(eConn)
 
-	_ = eiClient
-	_ = ctx
+	// instantiate models.
+	oModel := new(model.Order)
 
+	// instantiate repositories.
+	oRepo := mysql.NewOrderRepository(dbConn, *oModel)
+	eiRepo := remoteRepository.NewEdibleInventoryRepository(&ctx, eiClient)
+
+	// instantiate services.
+	osServ := service.NewOrderSubmitService(eiRepo, oRepo)
+
+	_ = osServ
 }

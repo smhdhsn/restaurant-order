@@ -10,6 +10,9 @@ import (
 	"github.com/smhdhsn/restaurant-order/internal/db"
 	"github.com/smhdhsn/restaurant-order/internal/model"
 	"github.com/smhdhsn/restaurant-order/internal/repository/mysql"
+	"github.com/smhdhsn/restaurant-order/internal/server"
+	"github.com/smhdhsn/restaurant-order/internal/server/handler"
+	"github.com/smhdhsn/restaurant-order/internal/server/resource"
 	"github.com/smhdhsn/restaurant-order/internal/service"
 
 	log "github.com/smhdhsn/restaurant-order/internal/logger"
@@ -68,5 +71,20 @@ func main() {
 	// instantiate services.
 	osServ := service.NewOrderSubmitService(eiRepo, oRepo)
 
-	_ = osServ
+	// instantiate handlers.
+	osHand := handler.NewOrderSubmitHandler(osServ)
+
+	// instantiate resources.
+	oRes := resource.NewOrderResource(osHand)
+
+	// instantiate gRPC server.
+	s, err := server.NewServer(&conf.Server, oRes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// listen and serve.
+	if err := s.Listen(); err != nil {
+		log.Fatal(err)
+	}
 }

@@ -21,4 +21,4 @@ COPY --from=binary /build/server /app/
 
 WORKDIR /app
 
-EXPOSE 9002
+EXPOSE 9003

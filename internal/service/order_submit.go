@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/pkg/errors"
+
 	"github.com/smhdhsn/restaurant-order/internal/model"
 
 	repositoryContract "github.com/smhdhsn/restaurant-order/internal/repository/contract"
@@ -14,7 +15,7 @@ type OrderSubmitServ struct {
 	oRepo repositoryContract.OrderRepository
 }
 
-// NewOrderSubmitService creates a service related to order submittion with it's dependencies.
+// NewOrderSubmitService creates a service related to order submission with it's dependencies.
 func NewOrderSubmitService(ir repositoryContract.EdibleInventoryRepository, or repositoryContract.OrderRepository) serviceContract.OrderSubmitService {
 	return &OrderSubmitServ{
 		iRepo: ir,

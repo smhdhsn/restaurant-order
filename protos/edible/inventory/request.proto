@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package edible.inventory.request;
+
+option go_package = "./;eipb";
+
+// The request schema for calling Use on inventory.
+message InventoryUseRequest {
+    uint32 food_id = 1;
+}

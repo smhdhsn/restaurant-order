@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mysql:8
+    container_name: restaurant_order_db
+    networks:
+      - restaurant
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "true"
+      MYSQL_USER: restaurant_order
+      MYSQL_PASSWORD: restaurant_order
+      MYSQL_DATABASE: order
+    ports:
+      - 4003:3306
+    expose:
+      - 4003
+    volumes:
+      - order:/var/lib/mysql
+    restart: on-failure
+
+  app:
+    build:
+      context: ../../
+      dockerfile: config/Dockerfile
+    container_name: restaurant_order_app
+    environment:
+      APP_MODE: $APP_MODE
+    ports:
+      - 9003:80
+    expose:
+      - 9003
+    networks:
+      - restaurant
+    depends_on:
+      - db
+    restart: on-failure
+    command: "/app/server"
+
+networks:
+  restaurant:
+    name: restaurant
+
+volumes:
+  order:
+    name: restaurant_order

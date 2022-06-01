@@ -1,0 +1,15 @@
+server: 
+  protocol: "tcp"
+  host: ""
+  port: 80
+
+db:
+  host: "restaurant_order_db"
+  port: 3306
+  name: "order"
+  user: "restaurant_order"
+  pass: "restaurant_order"
+
+services:
+  edible:
+    address: "restaurant_edible_app:80"

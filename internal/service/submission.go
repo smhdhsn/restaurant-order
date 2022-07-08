@@ -3,10 +3,10 @@ package service
 import (
 	"github.com/pkg/errors"
 
+	"github.com/smhdhsn/restaurant-order/internal/repository/entity"
 	"github.com/smhdhsn/restaurant-order/internal/service/dto"
 
 	repositoryContract "github.com/smhdhsn/restaurant-order/internal/repository/contract"
-	"github.com/smhdhsn/restaurant-order/internal/repository/entity"
 	serviceContract "github.com/smhdhsn/restaurant-order/internal/service/contract"
 )
 
@@ -33,6 +33,10 @@ func (s *SubmissionServ) Submit(oDTO *dto.Order) (err error) {
 
 	err = s.iRepo.Use(fEntity)
 	if err != nil {
+		if errors.Is(err, repositoryContract.ErrLackOfComponents) {
+			return serviceContract.ErrLackOfComponents
+		}
+
 		return errors.Wrap(err, "error on calling inventory gRPC server")
 	}
 

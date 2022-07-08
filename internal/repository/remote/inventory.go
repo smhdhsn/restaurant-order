@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/smhdhsn/restaurant-order/internal/repository/entity"
 
@@ -14,11 +16,11 @@ import (
 // InventoryRepo contains repository's database connection.
 type InventoryRepo struct {
 	client inventoryProto.EdibleInventoryServiceClient
-	ctx    *context.Context
+	ctx    context.Context
 }
 
 // NewInventoryRepository creates an instance of the remote repository with gRPC connection.
-func NewInventoryRepository(ctx *context.Context, conn inventoryProto.EdibleInventoryServiceClient) repositoryContract.InventoryRepository {
+func NewInventoryRepository(ctx context.Context, conn inventoryProto.EdibleInventoryServiceClient) repositoryContract.InventoryRepository {
 	return &InventoryRepo{
 		client: conn,
 		ctx:    ctx,
@@ -29,8 +31,17 @@ func NewInventoryRepository(ctx *context.Context, conn inventoryProto.EdibleInve
 func (s *InventoryRepo) Use(fEntity *entity.Food) error {
 	req := singleFoodEntityToProtoUseReq(fEntity)
 
-	_, err := s.client.Use(*s.ctx, req)
+	_, err := s.client.Use(s.ctx, req)
 	if err != nil {
+		if status, ok := status.FromError(err); ok {
+			switch status.Code() {
+			case codes.Internal:
+				return errors.Wrap(err, "error inside edible gRPC server")
+			case codes.NotFound:
+				return repositoryContract.ErrLackOfComponents
+			}
+		}
+
 		return errors.Wrap(err, "error on calling use on edible gRPC server")
 	}
 

@@ -61,17 +61,17 @@ func main() {
 	eiClient := inventoryProto.NewEdibleInventoryServiceClient(eConn)
 
 	// instantiate repositories.
-	eiRepo := remoteRepository.NewInventoryRepository(&ctx, eiClient)
+	eiRepo := remoteRepository.NewInventoryRepository(ctx, eiClient)
 	oRepo := mysql.NewOrderRepository(dbConn)
 
 	// instantiate services.
-	osServ := service.NewSubmissionService(eiRepo, oRepo)
+	sServ := service.NewSubmissionService(eiRepo, oRepo)
 
 	// instantiate handlers.
-	osHand := handler.NewSubmitHandler(osServ)
+	sHand := handler.NewSubmitHandler(sServ)
 
 	// instantiate resources.
-	oRes := resource.NewOrderResource(osHand)
+	oRes := resource.NewOrderResource(sHand)
 
 	// instantiate gRPC server.
 	s, err := server.NewServer(&conf.Server, oRes)

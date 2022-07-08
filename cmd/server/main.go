@@ -8,7 +8,6 @@ import (
 
 	"github.com/smhdhsn/restaurant-order/internal/config"
 	"github.com/smhdhsn/restaurant-order/internal/db"
-	"github.com/smhdhsn/restaurant-order/internal/model"
 	"github.com/smhdhsn/restaurant-order/internal/repository/mysql"
 	"github.com/smhdhsn/restaurant-order/internal/server"
 	"github.com/smhdhsn/restaurant-order/internal/server/handler"
@@ -16,7 +15,7 @@ import (
 	"github.com/smhdhsn/restaurant-order/internal/service"
 
 	log "github.com/smhdhsn/restaurant-order/internal/logger"
-	eipb "github.com/smhdhsn/restaurant-order/internal/protos/edible/inventory"
+	inventoryProto "github.com/smhdhsn/restaurant-order/internal/protos/edible/inventory"
 	remoteRepository "github.com/smhdhsn/restaurant-order/internal/repository/remote"
 )
 
@@ -43,13 +42,13 @@ func main() {
 	}
 
 	// initialize auto migration.
-	if err := db.InitMigrations(dbConn); err != nil {
+	if err := mysql.InitMigrations(dbConn); err != nil {
 		log.Fatal(err)
 	}
 
 	// make connection with external services.
 	eConn, err := grpc.Dial(
-		conf.Services["edible"].Address,
+		conf.Services[config.EdibleService].Address,
 		grpc.WithTransportCredentials(
 			insecure.NewCredentials(),
 		),
@@ -59,20 +58,17 @@ func main() {
 	}
 
 	// instantiate gRPC clients.
-	eiClient := eipb.NewEdibleInventoryServiceClient(eConn)
-
-	// instantiate models.
-	oModel := new(model.Order)
+	eiClient := inventoryProto.NewEdibleInventoryServiceClient(eConn)
 
 	// instantiate repositories.
-	oRepo := mysql.NewOrderRepository(dbConn, *oModel)
-	eiRepo := remoteRepository.NewEdibleInventoryRepository(&ctx, eiClient)
+	eiRepo := remoteRepository.NewInventoryRepository(&ctx, eiClient)
+	oRepo := mysql.NewOrderRepository(dbConn)
 
 	// instantiate services.
-	osServ := service.NewOrderSubmitService(eiRepo, oRepo)
+	osServ := service.NewSubmissionService(eiRepo, oRepo)
 
 	// instantiate handlers.
-	osHand := handler.NewOrderSubmitHandler(osServ)
+	osHand := handler.NewSubmitHandler(osServ)
 
 	// instantiate resources.
 	oRes := resource.NewOrderResource(osHand)

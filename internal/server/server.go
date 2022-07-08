@@ -11,7 +11,7 @@ import (
 	"github.com/smhdhsn/restaurant-order/internal/server/resource"
 
 	log "github.com/smhdhsn/restaurant-order/internal/logger"
-	ospb "github.com/smhdhsn/restaurant-order/internal/protos/order/submission"
+	submissionProto "github.com/smhdhsn/restaurant-order/internal/protos/order/submission"
 )
 
 // Server contains server's services.
@@ -22,7 +22,7 @@ type Server struct {
 }
 
 // NewServer creates a new http server.
-func NewServer(c *config.ServerConf, or *resource.OrderResource) (*Server, error) {
+func NewServer(c *config.ServerConf, oRes *resource.OrderResource) (*Server, error) {
 	// Listen to a specific host and port for incoming requests.
 	l, err := net.Listen(c.Protocol, fmt.Sprintf("%s:%d", c.Host, c.Port))
 	if err != nil {
@@ -33,7 +33,7 @@ func NewServer(c *config.ServerConf, or *resource.OrderResource) (*Server, error
 	s := grpc.NewServer()
 
 	// Register gRPC service handlers.
-	ospb.RegisterOrderSubmissionServiceServer(s, or.OrderSubmit)
+	submissionProto.RegisterOrderSubmissionServiceServer(s, oRes.SubmissionHandler)
 
 	return &Server{
 		listener: l,

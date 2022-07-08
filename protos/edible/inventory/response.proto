@@ -5,6 +5,4 @@ package edible.inventory.response;
 option go_package = "./;eipb";
 
 // The response you get for calling Use on inventory.
-message InventoryUseResponse {
-    bool status = 1;
-}
+message InventoryUseResponse {}
